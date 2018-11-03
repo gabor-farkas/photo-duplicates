@@ -1,0 +1,99 @@
+<html>
+
+<body>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="apikey.js"></script>
+    <pre id="pre"></pre>
+    <script>
+        function start() {
+            // 2. Initialize the JavaScript client library.
+            gapi.client.init({
+                'apiKey': app.apiKey,
+                // clientId and scope are optional if auth is not required.
+                'clientId': app.clientId,
+                'scope': 'https://www.googleapis.com/auth/photoslibrary',
+            }).then(function () {
+                // Listen for sign-in state changes.
+                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+                // Handle the initial sign-in state.
+                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            });
+        };
+        // 1. Load the JavaScript client library.
+        gapi.load('client:auth2', start);
+
+        function updateSigninStatus(isSignedIn) {
+            // When signin status changes, this function is called.
+            // If the signin status is changed to signedIn, we make an API call.
+            if (isSignedIn) {
+                fetchPhotos();
+            } else {
+                gapi.auth2.getAuthInstance().signIn();
+            }
+        }
+
+        function sendRequest(pageToken) {
+            return gapi.client.request({
+                'path': 'https://photoslibrary.googleapis.com/v1/mediaItems:search',
+                'method': 'POST',
+                'body': {
+                    pageSize: 100,
+                    pageToken: pageToken,
+                    "filters": {
+                        "mediaTypeFilter": {
+                            "mediaTypes": ["PHOTO"]
+                        },
+                        "dateFilter": {
+                            "ranges": {
+                                "startDate": {
+                                    "year": "2015",
+                                    "month": "1",
+                                    "day": "1"
+                                },
+                                "endDate": {
+                                    "year": "2015",
+                                    "month": "6",
+                                    "day": "1"
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        let totalCount = 0;
+        let duplicateCount = 0;
+
+        function processResponse(response) {
+            console.log(response);
+            let log = document.getElementById("pre").innerText;
+            let previousItem = null;
+            response.result.mediaItems.forEach(item => {
+                if (previousItem) {
+                    if (previousItem.filename == item.filename &&
+                        previousItem.mediaMetadata.creationTime == item.mediaMetadata.creationTime) {
+                        // duplication found. find the smaller resolution version
+                        let small = item.mediaMetadata.width < previousItem.mediaMetadata.width ? item : previousItem;
+                        let other = item.mediaMetadata.width < previousItem.mediaMetadata.width ? previousItem : item;
+                        log += JSON.stringify(small) + ";\n";
+                        duplicateCount ++;
+                    }
+                }
+                previousItem = item;
+            });
+            document.getElementById("pre").innerText = log;
+            totalCount += response.result.mediaItems.length;
+            if (duplicateCount < 100 && response.result.nextPageToken) {
+                sendRequest(response.result.nextPageToken).then(processResponse);
+            }
+        }
+
+        function fetchPhotos() {
+            sendRequest(null).then(processResponse);
+        }
+    </script>
+</body>
+
+</html>
