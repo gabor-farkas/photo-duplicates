@@ -48,12 +48,12 @@
                             "ranges": {
                                 "startDate": {
                                     "year": "2015",
-                                    "month": "1",
+                                    "month": "7",
                                     "day": "1"
                                 },
                                 "endDate": {
-                                    "year": "2015",
-                                    "month": "6",
+                                    "year": "2016",
+                                    "month": "1",
                                     "day": "1"
                                 }
                             }
@@ -72,13 +72,17 @@
             let previousItem = null;
             response.result.mediaItems.forEach(item => {
                 if (previousItem) {
-                    if (previousItem.filename == item.filename &&
+                    pn = previousItem.filename.replace("_small.jpg", ".jpg");
+                    cn = item.filename.replace("_small.jpg", ".jpg");
+                    if (pn == cn &&
                         previousItem.mediaMetadata.creationTime == item.mediaMetadata.creationTime) {
                         // duplication found. find the smaller resolution version
-                        let small = item.mediaMetadata.width < previousItem.mediaMetadata.width ? item : previousItem;
-                        let other = item.mediaMetadata.width < previousItem.mediaMetadata.width ? previousItem : item;
-                        log += JSON.stringify(small) + ";\n";
-                        duplicateCount ++;
+                        let small = parseInt(item.mediaMetadata.width) < parseInt(previousItem.mediaMetadata.width) ? item : previousItem;
+                        let other = parseInt(item.mediaMetadata.width) < parseInt(previousItem.mediaMetadata.width) ? previousItem : item;
+                        if (parseInt(small.mediaMetadata.width) < parseInt(other.mediaMetadata.width)) { // we could decide by file size here, but that doesn't seem to be available here
+                            log += JSON.stringify(small) + ";\n";
+                            duplicateCount ++;
+                        }
                     }
                 }
                 previousItem = item;

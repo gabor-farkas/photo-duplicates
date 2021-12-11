@@ -14,9 +14,9 @@ setTimeout(() => {
                     && content.indexOf(data[0].filename) != -1;
             console.log('matches: ', matches);
             if (matches) {
-                $('div[data-tooltip="Törlés"]').click();
+                $('button[aria-label="Törlés"]').click();
                 setTimeout(() => {
-                    $('div[data-id=EBS5u]').click();
+                    $('button[data-id=EBS5u]').click();
                     // continue
                     data = data.slice(1);
                     chrome.runtime.sendMessage({data : data});
