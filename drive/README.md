@@ -1,0 +1,1 @@
+Fetch `credentials.json` from https://console.cloud.google.com/apis/credentials?project=photo-duplicates for 'Drive client'

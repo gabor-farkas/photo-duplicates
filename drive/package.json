@@ -1,0 +1,7 @@
+{
+    "name": "drive-duplicates",
+    "version": "0.0.1",
+    "dependencies": {
+        "googleapis": "^39.2.0"
+    }
+}
