@@ -14,6 +14,7 @@ files.forEach(file => {
 
 let duplicateSize = 0;
 let deletables = []
+let duplicates = []
 for (const key in map) {
     if (map[key].length < 2) {
         delete map[key];
@@ -24,9 +25,18 @@ for (const key in map) {
                 deletables.push(map[key][i]);
             }
         }
+        if (map[key][0].size > 0
+             && map[key][0].fullFileExtension != 'ini') {
+            let duplicate = {};
+            duplicate.key = key;
+            duplicate.items = map[key];
+            duplicates.push(duplicate);
+        }
     }
 }
 
-deletables.sort((f1, f2) => parseInt(f2.size) - parseInt(f1.size))
-console.log(deletables);
+console.log(duplicates);
 console.log(duplicateSize);
+
+fs.writeFileSync("duplicates.jsonnl",
+    duplicates.map(d => JSON.stringify(d)).join("\n"));
